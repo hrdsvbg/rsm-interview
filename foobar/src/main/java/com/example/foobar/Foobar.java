@@ -6,6 +6,18 @@ import java.util.Set;
 public class Foobar {
     public String process(String input) {
 
+        if (input == null) {
+            throw new IllegalArgumentException("Input cannot be null");
+        }
+
+        if (input.isEmpty()) {
+            return "";
+        }
+
+        if (input.isBlank()) {
+            throw new IllegalArgumentException("Input cannot be blank");
+        }
+
         Set<String> seen = new HashSet<>();
         StringBuilder output = new StringBuilder();
 

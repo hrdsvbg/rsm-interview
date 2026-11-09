@@ -30,6 +30,26 @@ public class FoobarTest {
     }
 
     @Test
+    void emptyInputReturnsEmptyString() {
+        assertEquals("", foobar.process(""));
+    }
+
+    @Test
+    void negativeNumbersAreProcessed() {
+        assertEquals("1,-2,foo,4,bar,foo,foobar", foobar.process("1,-2,-3,4,5,6,-45"));
+    }
+
+    @Test
+    void mustRejectNullInput() {
+        assertThrows(IllegalArgumentException.class, () -> foobar.process(null));
+    }
+
+    @Test
+    void mustRejectBlankInput() {
+        assertThrows(IllegalArgumentException.class, () -> foobar.process(" "));
+    }
+
+    @Test
     void mustRejectOnMissingElement() {
         assertThrows(IllegalArgumentException.class, () -> foobar.process("1,,2"));
     }
@@ -37,6 +57,11 @@ public class FoobarTest {
     @Test
     void mustRejectNonNumericInput() {
         assertThrows(IllegalArgumentException.class, () -> foobar.process("a,b,c"));
+    }
+
+    @Test
+    void mustRejectNonIntegerInput() {
+        assertThrows(IllegalArgumentException.class, () -> foobar.process("3.4"));
     }
 
 }
