@@ -12,4 +12,24 @@
     </parent>
 
     <artifactId>selenium</artifactId>
+
+    <properties>
+        <selenium.version>4.27.0</selenium.version>
+        <webdrivermanager.version>5.9.2</webdrivermanager.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>${selenium.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.bonigarcia</groupId>
+            <artifactId>webdrivermanager</artifactId>
+            <version>${webdrivermanager.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>
