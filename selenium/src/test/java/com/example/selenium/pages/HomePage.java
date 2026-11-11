@@ -2,11 +2,11 @@ package com.example.selenium.pages;
 
 import org.openqa.selenium.WebDriver;
 
-public class GooglePage extends BasePage {
+public class HomePage extends BasePage {
 
-    private static final String URL = "https://www.google.com";
+    private static final String URL = "https://www.amazon.co.uk";
 
-    public GooglePage(WebDriver driver) {
+    public HomePage(WebDriver driver) {
         super(driver);
     }
 
