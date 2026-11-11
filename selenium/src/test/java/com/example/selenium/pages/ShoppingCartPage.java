@@ -17,15 +17,6 @@ public class ShoppingCartPage extends BasePage {
         super(driver);
     }
 
-    // public List<CartItemComponent> getItems() {
-    // List<WebElement> items = driver.findElements(
-    // By.xpath("//div[contains(@class,'sc-list-item') and @data-asin]")
-    // );
-    // return items.stream()
-    // .map(item -> new CartItemComponent(item, driver))
-    // .toList();
-    // }
-
     public List<CartItemComponent> getItems() {
         List<WebElement> items = driver.findElements(
                 By.xpath("//div[contains(@class,'sc-list-item') " +

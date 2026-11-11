@@ -15,32 +15,16 @@ public class ResultsPage extends BasePage {
 
     private final By noResultsLocator = By.xpath("//span[normalize-space()='No results for your search query.']");
 
-    // public ResultsPage(WebDriver driver) {
-    //     super(driver);
-    //     // wait.until(ExpectedConditions.presenceOfElementLocated(resultsLocator));
-    // }
-
-    // public SearchResultComponent getResult(int index) {
-    //     List<WebElement> results = driver.findElements(resultsLocator);
-    //     return new SearchResultComponent(results.get(index), driver);
-    // }
-
-    // public int getResultsCount() {
-    //     return driver.findElements(resultsLocator).size();
-    // }
-
     public ResultsPage(WebDriver driver) {
         super(driver);
         waitForSearchResponse();
     }
 
     private void waitForSearchResponse() {
-    wait.until(ExpectedConditions.or(
-            ExpectedConditions.presenceOfElementLocated(resultsLocator),
-            ExpectedConditions.presenceOfElementLocated(noResultsLocator)
-    ));
-}
-
+        wait.until(ExpectedConditions.or(
+                ExpectedConditions.presenceOfElementLocated(resultsLocator),
+                ExpectedConditions.presenceOfElementLocated(noResultsLocator)));
+    }
 
     public SearchResultComponent getResult(int index) {
         List<WebElement> results = driver.findElements(resultsLocator);
