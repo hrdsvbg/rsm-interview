@@ -44,7 +44,7 @@ public class ResultItemTest extends BaseTest {
         assertTrue(productPage.getTitle().contains("Harry Potter and the Cursed Child"));
         assertEquals(EXPECTED_PRODUCT_TITLE, productPage.getProductTitle());
     }
-        // This TC can be parametrized if we know the avalable version
+    // This TC can be parametrized if we know the avalable version
 
     // Other test case ideas:
     // - Author

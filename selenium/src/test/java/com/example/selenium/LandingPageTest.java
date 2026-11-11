@@ -34,6 +34,4 @@ public class LandingPageTest extends BaseTest {
         assertEquals(0, shoppingCartPage.getItems().size(), "Shopping cart must be empty");
     }
 
-
-
 }
