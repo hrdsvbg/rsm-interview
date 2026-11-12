@@ -1,4 +1,4 @@
-package com.example.threads;
+package com.example.threads.service;
 
 public interface DownloadInfo {
 
