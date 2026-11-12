@@ -17,15 +17,17 @@ import com.example.threads.service.UploadService;
 class OperationServiceTest {
 
     @Test
-    void processPackageLoadsAndValidatesDownloadedFiles() {
+    void processPackageUsesSemaphoreForMultipleLargeFiles() {
         DownloadService downloadService = mock(DownloadService.class);
         UploadService uploadService = mock(UploadService.class);
-        DownloadInfo file = mock(DownloadInfo.class);
-        when(downloadService.getDownloadInfos(42L)).thenReturn(List.of(file));
-        when(file.getOriginalFileName()).thenReturn("document.txt");
-        when(file.getSize()).thenReturn(1);
-        when(file.getFileKey()).thenReturn("document-key");
-        when(file.getDownloadURL()).thenReturn("https://example.com/document.txt");
+        int fileSizeInMB = 1024 * 1024;
+        List<DownloadInfo> files = List.of(
+                validFile("first.txt", 50 * fileSizeInMB),
+                validFile("second.txt", 80 * fileSizeInMB),
+                validFile("third.txt", 30 * fileSizeInMB),
+                validFile("fourth.txt", 20 * fileSizeInMB),
+                validFile("fifth.txt", 20 * fileSizeInMB));
+        when(downloadService.getDownloadInfos(42L)).thenReturn(files);
 
         OperationService operationService = new OperationService(downloadService, uploadService);
 
@@ -45,5 +47,14 @@ class OperationServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> operationService.processPackage(42L));
         verify(downloadService).getDownloadInfos(42L);
+    }
+
+    private DownloadInfo validFile(String name, int size) {
+        DownloadInfo file = mock(DownloadInfo.class);
+        when(file.getOriginalFileName()).thenReturn(name);
+        when(file.getSize()).thenReturn(size);
+        when(file.getFileKey()).thenReturn(name + "-key");
+        when(file.getDownloadURL()).thenReturn("https://example.com/" + name);
+        return file;
     }
 }
