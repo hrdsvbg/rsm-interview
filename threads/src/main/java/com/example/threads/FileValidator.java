@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.example.threads.service.DownloadInfo;
+
 public class FileValidator {
 
     private static final long MAX_SIZE = 100L * 1024 * 1024;
@@ -32,7 +34,7 @@ public class FileValidator {
             }
 
             String lowerCaseName = name.toLowerCase();
-            
+
             if (seen.contains(lowerCaseName)) {
                 throw new IllegalArgumentException("Duplicate filename: " + name);
             } else {
