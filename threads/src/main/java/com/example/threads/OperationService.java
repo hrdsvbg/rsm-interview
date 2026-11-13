@@ -1,6 +1,8 @@
 
 package com.example.threads;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -55,12 +57,14 @@ public class OperationService {
 
                 boolean success = true;
                 long uploadTime = 0;
+                Path tempFile = null;
 
                 try {
                     semaphore.acquire(file.getSize());
 
                     try {
-                        downloader.download(file.getDownloadURL());
+                        tempFile = Files.createTempFile(file.getOriginalFileName(), ".tmp");
+                        downloader.download(file.getDownloadURL(), tempFile);
 
                     } finally {
                         semaphore.release(file.getSize());
@@ -72,6 +76,10 @@ public class OperationService {
                 } catch (InterruptedException e) {
                     success = false;
                     Thread.currentThread().interrupt();
+                }
+
+                if (tempFile != null) {
+                    Files.delete(tempFile);
                 }
 
                 return new FileReport(
