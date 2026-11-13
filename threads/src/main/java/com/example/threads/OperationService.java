@@ -1,12 +1,16 @@
 
 package com.example.threads;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import com.example.threads.report.FileReport;
 import com.example.threads.report.OperationReport;
 import com.example.threads.service.DownloadInfo;
 import com.example.threads.service.DownloadService;
@@ -30,6 +34,8 @@ public class OperationService {
 
     public OperationReport processPackage(long packageId) {
 
+        long startTime = System.currentTimeMillis();
+
         List<DownloadInfo> files = downloadService.getDownloadInfos(packageId);
 
         FileValidator.validate(files);
@@ -38,60 +44,122 @@ public class OperationService {
 
         Semaphore semaphore = new Semaphore(MAX_CAPACITY);
 
+        List<Future<FileReport>> futures = new ArrayList<>();
+
         for (DownloadInfo file : files) {
 
-            pool.submit(() -> {
+            Callable<FileReport> task = () -> {
 
                 String thread = Thread.currentThread().getName();
 
+                boolean success = true;
+                long uploadTime = 0;
+
                 try {
                     System.out.println(
-                            thread + " waiting for " +
-                                    file.getOriginalFileName() +
-                                    " (" + file.getSize() + " bytes)");
+                            thread + " waiting for "
+                                    + file.getOriginalFileName()
+                                    + " (" + file.getSize() + " bytes)");
 
                     semaphore.acquire(file.getSize());
 
                     try {
                         System.out.println(
-                                thread + " ACQUIRED permits for " +
-                                        file.getOriginalFileName());
+                                thread + " STARTED DOWNLOADING "
+                                        + file.getOriginalFileName());
 
-                        // Simulate work
                         Thread.sleep(3000);
 
                         System.out.println(
-                                thread + " FINISHED working " +
-                                        file.getOriginalFileName());
+                                thread + " FINISHED DOWNLOADING "
+                                        + file.getOriginalFileName());
 
                     } finally {
                         semaphore.release(file.getSize());
 
                         System.out.println(
-                                thread + " RELEASED permits for " +
-                                        file.getOriginalFileName());
+                                thread + " RELEASED CAPACITY for "
+                                        + file.getOriginalFileName());
                     }
 
+                    long uploadStart = System.currentTimeMillis();
+
+                    System.out.println(
+                            thread + " STARTED UPLOADING "
+                                    + file.getOriginalFileName());
+
+                    Thread.sleep(2000);
+
+                    uploadTime = System.currentTimeMillis() - uploadStart;
+
+                    System.out.println(
+                            thread + " FINISHED UPLOADING "
+                                    + file.getOriginalFileName());
+
                 } catch (InterruptedException e) {
+
+                    success = false;
                     Thread.currentThread().interrupt();
+
+                    System.out.println(
+                            thread + " INTERRUPTED "
+                                    + file.getOriginalFileName());
                 }
-            });
+
+                return new FileReport(
+                        file.getOriginalFileName(),
+                        uploadTime,
+                        success);
+            };
+
+            futures.add(pool.submit(task));
         }
 
         pool.shutdown();
 
+        List<FileReport> reports = new ArrayList<>();
+
+        int successes = 0;
+        int failures = 0;
+
         try {
-            if (!pool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)) {
-                pool.shutdownNow();
-                throw new IllegalStateException("Timed out while processing package " + packageId);
+            for (Future<FileReport> future : futures) {
+
+                FileReport report = future.get();
+
+                reports.add(report);
+
+                if (report.isSuccessful()) {
+                    successes++;
+                } else {
+                    failures++;
+                }
             }
-        } catch (InterruptedException e) {
+
+            pool.awaitTermination(
+                    Long.MAX_VALUE,
+                    TimeUnit.NANOSECONDS);
+
+        } catch (Exception e) {
+
             pool.shutdownNow();
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Interrupted while processing package " + packageId, e);
+
+            throw new IllegalStateException(
+                    "Error processing package " + packageId, e);
         }
 
+        long totalTime = System.currentTimeMillis() - startTime;
+
         System.out.println("Work is done");
-        return null;
+        System.out.println("Total time: " + totalTime + " ms");
+        System.out.println("Successes: " + successes);
+        System.out.println("Failures: " + failures);
+        System.out.println("");
+
+        return new OperationReport(
+                reports,
+                totalTime,
+                successes,
+                failures);
     }
 }

@@ -1,7 +1,9 @@
 package com.example.threads;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -10,6 +12,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.example.threads.report.OperationReport;
 import com.example.threads.service.DownloadInfo;
 import com.example.threads.service.DownloadService;
 import com.example.threads.service.UploadService;
@@ -46,6 +49,27 @@ class OperationServiceTest {
         OperationService operationService = new OperationService(downloadService, uploadService);
 
         assertThrows(IllegalArgumentException.class, () -> operationService.processPackage(42L));
+        verify(downloadService).getDownloadInfos(42L);
+    }
+
+    @Test
+    void processPackageReturnsOperationReport() {
+        DownloadService downloadService = mock(DownloadService.class);
+        UploadService uploadService = mock(UploadService.class);
+        DownloadInfo file = validFile("report.txt", 1);
+        when(downloadService.getDownloadInfos(42L)).thenReturn(List.of(file));
+
+        OperationService operationService = new OperationService(downloadService, uploadService);
+
+        OperationReport report = operationService.processPackage(42L);
+
+        assertEquals(1, report.getFiles().size());
+        assertTrue(report.getTotalTime() >= 0);
+        assertEquals(1, report.getSuccesses());
+        assertEquals(0, report.getFailures());
+        assertEquals("report.txt", report.getFiles().get(0).getName());
+        assertTrue(report.getFiles().get(0).isSuccessful());
+        assertTrue(report.getFiles().get(0).getUploadTime() > 0);
         verify(downloadService).getDownloadInfos(42L);
     }
 
