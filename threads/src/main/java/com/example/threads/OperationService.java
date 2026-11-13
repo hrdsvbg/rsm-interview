@@ -1,6 +1,7 @@
 
 package com.example.threads;
 
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -70,7 +71,14 @@ public class OperationService {
                         semaphore.release(file.getSize());
                     }
                     long uploadStart = System.currentTimeMillis();
-                    uploadService.doUpload(file.getFileKey(), null, MAX_CAPACITY);
+
+                    try (InputStream inputStream = Files.newInputStream(tempFile)) {
+                        uploadService.doUpload(
+                                file.getFileKey(),
+                                inputStream,
+                                file.getSize());
+                    }
+
                     uploadTime = System.currentTimeMillis() - uploadStart;
 
                 } catch (InterruptedException e) {
