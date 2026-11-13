@@ -16,13 +16,14 @@ import com.example.threads.report.OperationReport;
 import com.example.threads.service.DownloadInfo;
 import com.example.threads.service.DownloadService;
 import com.example.threads.service.UploadService;
+import com.example.threads.service.UploadServiceImpl;
 
 class OperationServiceTest {
 
     @Test
     void processPackageUsesSemaphoreForMultipleLargeFiles() {
         DownloadService downloadService = mock(DownloadService.class);
-        UploadService uploadService = mock(UploadService.class);
+        UploadService uploadService = new UploadServiceImpl();
         int fileSizeInMB = 1024 * 1024;
         List<DownloadInfo> files = List.of(
                 validFile("first.txt", 50 * fileSizeInMB),
@@ -41,7 +42,7 @@ class OperationServiceTest {
     @Test
     void processPackageRejectsInvalidDownloadedFiles() {
         DownloadService downloadService = mock(DownloadService.class);
-        UploadService uploadService = mock(UploadService.class);
+        UploadService uploadService = new UploadServiceImpl();
         DownloadInfo file = mock(DownloadInfo.class);
         when(downloadService.getDownloadInfos(42L)).thenReturn(List.of(file));
         when(file.getOriginalFileName()).thenReturn("");
@@ -55,7 +56,7 @@ class OperationServiceTest {
     @Test
     void processPackageReturnsOperationReport() {
         DownloadService downloadService = mock(DownloadService.class);
-        UploadService uploadService = mock(UploadService.class);
+        UploadService uploadService = new UploadServiceImpl();
         DownloadInfo file = validFile("report.txt", 1);
         when(downloadService.getDownloadInfos(42L)).thenReturn(List.of(file));
 
@@ -77,7 +78,7 @@ class OperationServiceTest {
         DownloadInfo file = mock(DownloadInfo.class);
         when(file.getOriginalFileName()).thenReturn(name);
         when(file.getSize()).thenReturn(size);
-        when(file.getFileKey()).thenReturn(name + "-key");
+        when(file.getFileKey()).thenReturn(name);
         when(file.getDownloadURL()).thenReturn("https://example.com/" + name);
         return file;
     }

@@ -14,6 +14,7 @@ import com.example.threads.report.FileReport;
 import com.example.threads.report.OperationReport;
 import com.example.threads.service.DownloadInfo;
 import com.example.threads.service.DownloadService;
+import com.example.threads.service.DownloadServiceImpl;
 import com.example.threads.service.UploadService;
 
 public class OperationService {
@@ -22,6 +23,7 @@ public class OperationService {
     private static final int MAX_CAPACITY = 100 * 1024 * 1024;
 
     private final DownloadService downloadService;
+    private final DownloadServiceImpl downloader;
     private final UploadService uploadService;
 
     public OperationService(
@@ -29,6 +31,7 @@ public class OperationService {
             UploadService uploadService) {
 
         this.downloadService = downloadService;
+        this.downloader = new DownloadServiceImpl();
         this.uploadService = uploadService;
     }
 
@@ -50,60 +53,25 @@ public class OperationService {
 
             Callable<FileReport> task = () -> {
 
-                String thread = Thread.currentThread().getName();
-
                 boolean success = true;
                 long uploadTime = 0;
 
                 try {
-                    System.out.println(
-                            thread + " waiting for "
-                                    + file.getOriginalFileName()
-                                    + " (" + file.getSize() + " bytes)");
-
                     semaphore.acquire(file.getSize());
 
                     try {
-                        System.out.println(
-                                thread + " STARTED DOWNLOADING "
-                                        + file.getOriginalFileName());
-
-                        Thread.sleep(3000);
-
-                        System.out.println(
-                                thread + " FINISHED DOWNLOADING "
-                                        + file.getOriginalFileName());
+                        downloader.download(file.getDownloadURL());
 
                     } finally {
                         semaphore.release(file.getSize());
-
-                        System.out.println(
-                                thread + " RELEASED CAPACITY for "
-                                        + file.getOriginalFileName());
                     }
-
                     long uploadStart = System.currentTimeMillis();
-
-                    System.out.println(
-                            thread + " STARTED UPLOADING "
-                                    + file.getOriginalFileName());
-
-                    Thread.sleep(2000);
-
+                    uploadService.doUpload(file.getFileKey(), null, MAX_CAPACITY);
                     uploadTime = System.currentTimeMillis() - uploadStart;
 
-                    System.out.println(
-                            thread + " FINISHED UPLOADING "
-                                    + file.getOriginalFileName());
-
                 } catch (InterruptedException e) {
-
                     success = false;
                     Thread.currentThread().interrupt();
-
-                    System.out.println(
-                            thread + " INTERRUPTED "
-                                    + file.getOriginalFileName());
                 }
 
                 return new FileReport(
@@ -149,12 +117,6 @@ public class OperationService {
         }
 
         long totalTime = System.currentTimeMillis() - startTime;
-
-        System.out.println("Work is done");
-        System.out.println("Total time: " + totalTime + " ms");
-        System.out.println("Successes: " + successes);
-        System.out.println("Failures: " + failures);
-        System.out.println("");
 
         return new OperationReport(
                 reports,
