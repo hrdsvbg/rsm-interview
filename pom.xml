@@ -13,7 +13,6 @@
         <module>foobar</module>
         <module>selenium</module>
         <module>threads</module>
-        <module>calculator</module>
     </modules>
 
     <properties>
